@@ -44,7 +44,9 @@ export default function ComponentGenerator() {
 
   // Save components to localStorage whenever the array changes
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(generatedComponents));
+    if (generatedComponents.length > 0) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(generatedComponents));
+    }
   }, [generatedComponents]);
 
   const handleGenerate = async () => {
@@ -67,7 +69,9 @@ export default function ComponentGenerator() {
           timestamp: Date.now(),
         };
 
-        setGeneratedComponents((prev) => [...prev, newComponent]);
+        setGeneratedComponents((prev) => {
+          return [...prev, newComponent];
+        });
         setUserPrompt(""); // Clear the input after successful generation
       } else {
         setError("Invalid component configuration received");
