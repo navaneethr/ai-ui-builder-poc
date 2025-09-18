@@ -12,11 +12,25 @@ interface Message {
   timestamp: Date;
 }
 
-export default function ChatSection() {
+interface ComponentData {
+  id: string;
+  component: string;
+  prompt: string;
+  props: any;
+  timestamp: number;
+}
+
+interface ChatSectionProps {
+  componentData?: ComponentData[];
+}
+
+export default function ChatSection({ componentData = [] }: ChatSectionProps) {
+  console.log("ChatSection received componentData:", componentData);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
-      content: "Hello! How can I help you today?",
+      content:
+        "Hello! I can help you analyze the data from your generated components. What would you like to know?",
       role: "assistant",
       timestamp: new Date(),
     },
@@ -48,16 +62,15 @@ export default function ChatSection() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/chat", {
+      const componentData = localStorage.getItem("generated-components");
+      const response = await fetch("/api/chat-assistant", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          messages: [...messages, userMessage].map((msg) => ({
-            role: msg.role,
-            content: msg.content,
-          })),
+          message: input.trim(),
+          componentData: componentData ? JSON.parse(componentData) : [],
         }),
       });
 
@@ -105,7 +118,7 @@ export default function ChatSection() {
       {/* Chat Header */}
       <div className="p-4 border-b border-slate-200 dark:border-slate-700">
         <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-          Chat
+          Ask AI Assistant about your Dashboard
         </h3>
       </div>
 
@@ -161,11 +174,7 @@ export default function ChatSection() {
             onClick={sendMessage}
             disabled={isLoading || !input.trim()}
           >
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
+            {isLoading ? "..." : "→"}
           </Button>
         </div>
       </div>
