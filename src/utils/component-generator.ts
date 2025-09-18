@@ -8,7 +8,10 @@ export async function generateComponentFromPrompt(
   generatedComponents: ComponentConfig[]
 ): Promise<ComponentConfig> {
   try {
-    const prompt = createComponentMappingPrompt(userPrompt);
+    const prompt = createComponentMappingPrompt(
+      userPrompt,
+      generatedComponents
+    );
 
     const response = await fetch("/api/chat", {
       method: "POST",
@@ -49,6 +52,9 @@ export async function generateComponentFromPrompt(
 
     const config = JSON.parse(cleanMessage);
 
+    console.log("Generated config:", config);
+    console.log("Config validation:", validateComponentConfig(config));
+
     return config;
   } catch (error) {
     console.error("Error generating component:", error);
@@ -62,7 +68,9 @@ export function validateComponentConfig(
   return (
     config &&
     typeof config === "object" &&
-    (config.component === "StatCard" || config.component === "BasicTable") &&
+    (config.component === "StatCard" ||
+      config.component === "BasicTable" ||
+      config.component === "BarChart") &&
     config.props &&
     config.reasoning &&
     typeof config.reasoning === "string"

@@ -47,6 +47,40 @@ export const COMPONENT_MAPPING_PROMPT = `You are an AI assistant that helps user
   "reasoning": "Multiple data points require table display"
 }
 
+### 3. BarChart
+**Purpose**: Display data as vertical bars for easy comparison
+**Best for**: Trends over time, comparisons between categories, numerical data visualization
+**Props**:
+- \`data\` (array): Array of objects containing the data (must include 'month' field)
+- \`config\` (object): Chart configuration with color and label settings
+- \`title\` (string, optional): Chart title
+- \`description\` (string, optional): Chart description
+- \`className\` (string, optional): Additional CSS classes
+
+**Example**:
+{
+  "component": "BarChart",
+  "props": {
+    "data": [
+      { "month": "January", "revenue": 186, "profit": 80 },
+      { "month": "February", "revenue": 305, "profit": 200 }
+    ],
+    "config": {
+      "revenue": {
+        "label": "Revenue",
+        "color": "var(--chart-1)"
+      },
+      "profit": {
+        "label": "Profit",
+        "color": "var(--chart-2)"
+      }
+    },
+    "title": "Revenue vs Profit",
+    "description": "Monthly comparison"
+  },
+  "reasoning": "Time series data with comparisons requires bar chart visualization"
+}
+
 ## Decision Making Guidelines
 
 ### Choose StatCard when:
@@ -60,6 +94,12 @@ export const COMPONENT_MAPPING_PROMPT = `You are an AI assistant that helps user
 - Request includes structured information
 - Data has multiple attributes/columns
 - Keywords: "table", "list", "data", "companies", "years", "comparison"
+
+### Choose BarChart when:
+- User mentions trends over time (months, quarters, years)
+- The request implies visual comparison of numerical data
+- Data has time-based or categorical structure with numerical values
+- Keywords: "chart", "graph", "visualization", "trends", "over time", "monthly", "quarterly"
 
 ## Input Processing Steps
 
@@ -81,6 +121,7 @@ export const COMPONENT_MAPPING_PROMPT = `You are an AI assistant that helps user
 4. **Generate configuration**:
    - For StatCard: Extract the most important metric
    - For BasicTable: Structure all data into rows and columns
+   - For BarChart: Structure data with time periods and numerical comparisons
 
 ## Example Mappings
 
@@ -144,10 +185,34 @@ export const COMPONENT_MAPPING_PROMPT = `You are an AI assistant that helps user
   "reasoning": "Multiple companies with same metrics require table comparison"
 }
 
+### Example 4: Time Series Data
+**Input**: "Show a chart of monthly revenue for Q1 2024: January $50M, February $65M, March $72M"
+**Analysis**: Time series data with numerical comparisons
+**Output**:
+{
+  "component": "BarChart",
+  "props": {
+    "data": [
+      { "month": "January", "revenue": 50 },
+      { "month": "February", "revenue": 65 },
+      { "month": "March", "revenue": 72 }
+    ],
+    "config": {
+      "revenue": {
+        "label": "Revenue",
+        "color": "var(--chart-1)"
+      }
+    },
+    "title": "Q1 2024 Monthly Revenue",
+    "description": "Revenue trends for first quarter"
+  },
+  "reasoning": "Time series data with monthly trends requires bar chart visualization"
+}
+
 ## Response Format
 
 Always respond with a valid JSON object containing:
-- \`component\`: The chosen component name ("StatCard" or "BasicTable")
+- \`component\`: The chosen component name ("StatCard", "BasicTable", or "BarChart")
 - \`props\`: The component-specific properties
 - \`reasoning\`: Brief explanation of why this component was chosen
 
@@ -169,17 +234,37 @@ USER REQUEST: {userPrompt}
 IMPORTANT: Respond with ONLY valid JSON. Do not use markdown formatting, code blocks, or any other text. Just return the raw JSON object.`;
 
 export interface ComponentConfig {
-  component: "StatCard" | "BasicTable";
+  component: "StatCard" | "BasicTable" | "BarChart";
   props: {
     title?: string;
     value?: string;
     data?: Array<Record<string, any>>;
     columns?: Array<{ key: string; label: string }>;
+    config?: Record<string, { label: string; color: string }>;
+    description?: string;
     className?: string;
   };
   reasoning: string;
 }
 
-export function createComponentMappingPrompt(userPrompt: string): string {
-  return COMPONENT_MAPPING_PROMPT.replace(/\{userPrompt\}/g, userPrompt);
+export function createComponentMappingPrompt(
+  userPrompt: string,
+  componentHistory: CachedComponent[] = []
+): string {
+  const historyText =
+    componentHistory.length > 0
+      ? `Previously generated components:\n${componentHistory
+          .map(
+            (comp, index) =>
+              `${index + 1}. Component: ${comp.component}\n   Prompt: "${
+                comp.prompt
+              }"\n   Data: ${JSON.stringify(comp.props, null, 2)}\n`
+          )
+          .join("\n")}`
+      : "No previous components generated.";
+
+  return COMPONENT_MAPPING_PROMPT.replace(
+    /\{componentHistory\}/g,
+    historyText
+  ).replace(/\{userPrompt\}/g, userPrompt);
 }

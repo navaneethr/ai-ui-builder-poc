@@ -10,6 +10,7 @@ import {
 } from "@/utils/component-generator";
 import StatCard from "./StatCard";
 import BasicTable from "./BasicTable";
+import BarChartComponent from "./BarChart";
 import { ComponentConfig } from "@/prompts/component-mapping";
 
 interface CachedComponent extends ComponentConfig {
@@ -105,6 +106,16 @@ export default function ComponentGenerator() {
           <BasicTable
             data={props.data || []}
             columns={props.columns || []}
+            className={props.className}
+          />
+        );
+      case "BarChart":
+        return (
+          <BarChartComponent
+            data={props.data || []}
+            config={props.config || {}}
+            title={props.title}
+            description={props.description}
             className={props.className}
           />
         );
