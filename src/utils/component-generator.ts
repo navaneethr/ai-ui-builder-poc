@@ -2,10 +2,11 @@ import {
   createComponentMappingPrompt,
   ComponentConfig,
 } from "@/prompts/component-mapping";
+import { CachedComponent } from "@/app/page";
 
 export async function generateComponentFromPrompt(
   userPrompt: string,
-  generatedComponents: ComponentConfig[]
+  generatedComponents: CachedComponent[]
 ): Promise<ComponentConfig> {
   try {
     const prompt = createComponentMappingPrompt(

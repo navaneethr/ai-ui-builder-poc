@@ -24,17 +24,11 @@ interface ChatSectionProps {
   componentData?: ComponentData[];
 }
 
+const CHAT_STORAGE_KEY = "ai-chat-history";
+
 export default function ChatSection({ componentData = [] }: ChatSectionProps) {
   console.log("ChatSection received componentData:", componentData);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      content:
-        "Hello! I can help you analyze the data from your generated components. What would you like to know?",
-      role: "assistant",
-      timestamp: new Date(),
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -42,6 +36,61 @@ export default function ChatSection({ componentData = [] }: ChatSectionProps) {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
+  // Load chat history from localStorage on mount
+  useEffect(() => {
+    const loadChatHistory = () => {
+      const saved = localStorage.getItem(CHAT_STORAGE_KEY);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          // Convert timestamp strings back to Date objects
+          const messagesWithDates = parsed.map((msg: any) => ({
+            ...msg,
+            timestamp: new Date(msg.timestamp),
+          }));
+          setMessages(messagesWithDates);
+          console.log(
+            "Loaded chat history from localStorage:",
+            messagesWithDates
+          );
+        } catch (error) {
+          console.error("Failed to parse saved chat history:", error);
+          // Initialize with default message if parsing fails
+          setMessages([
+            {
+              id: "1",
+              content:
+                "Hello! I can help you analyze the data from your generated components. What would you like to know?",
+              role: "assistant",
+              timestamp: new Date(),
+            },
+          ]);
+        }
+      } else {
+        // Initialize with default message if no saved history
+        setMessages([
+          {
+            id: "1",
+            content:
+              "Hello! I can help you analyze the data from your generated components. What would you like to know?",
+            role: "assistant",
+            timestamp: new Date(),
+          },
+        ]);
+      }
+    };
+
+    loadChatHistory();
+  }, []);
+
+  // Save chat history to localStorage whenever messages change
+  useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages));
+      console.log("Saved chat history to localStorage:", messages);
+    }
+  }, [messages]);
 
   useEffect(() => {
     scrollToBottom();
@@ -113,13 +162,38 @@ export default function ChatSection({ componentData = [] }: ChatSectionProps) {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
+  const clearChatHistory = () => {
+    setMessages([
+      {
+        id: "1",
+        content:
+          "Hello! I can help you analyze the data from your generated components. What would you like to know?",
+        role: "assistant",
+        timestamp: new Date(),
+      },
+    ]);
+    localStorage.removeItem(CHAT_STORAGE_KEY);
+  };
+
   return (
     <div className="h-screen bg-slate-50 dark:bg-slate-900 border-l border-slate-200 dark:border-slate-700 flex flex-col">
       {/* Chat Header */}
       <div className="p-4 border-b border-slate-200 dark:border-slate-700">
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-          Ask AI Assistant about your Dashboard
-        </h3>
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+            Ask AI Assistant about your Dashboard
+          </h3>
+          {messages.length > 1 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={clearChatHistory}
+              className="text-xs"
+            >
+              Clear Chat
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Chat Messages */}

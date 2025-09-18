@@ -5,7 +5,7 @@ import Sidebar from "@/components/Sidebar";
 import MainContent from "@/components/MainContent";
 import ChatSection from "@/components/ChatSection";
 
-interface CachedComponent {
+export interface CachedComponent {
   id: string;
   component: string;
   prompt: string;
