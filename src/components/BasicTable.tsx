@@ -35,11 +35,11 @@ export default function BasicTable({
     <div className={`rounded-md border ${className}`}>
       <Table className="table-fixed w-full">
         <TableHeader>
-          <TableRow>
+          <TableRow className="border-b-0">
             {columns.map((column) => (
               <TableHead
                 key={column.key}
-                className="font-semibold max-w-[300px]"
+                className="font-semibold max-w-[300px] border-r border-b last:border-r-0"
               >
                 {column.label}
               </TableHead>
@@ -48,11 +48,11 @@ export default function BasicTable({
         </TableHeader>
         <TableBody>
           {data.map((row, index) => (
-            <TableRow key={index}>
+            <TableRow key={index} className="border-b-0">
               {columns.map((column) => (
                 <TableCell
                   key={column.key}
-                  className="font-medium max-w-[300px] truncate"
+                  className="font-medium max-w-[300px] truncate border-r border-b last:border-r-0"
                 >
                   {row[column.key]}
                 </TableCell>
