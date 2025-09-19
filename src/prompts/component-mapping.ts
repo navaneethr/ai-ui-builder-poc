@@ -1,4 +1,4 @@
-import { CachedComponent } from "@/app/page";
+import { CachedComponent } from "@/types";
 
 export const COMPONENT_MAPPING_PROMPT = `You are an AI assistant that helps users create UI components by analyzing their natural language requests and mapping them to appropriate components with proper configurations.
 

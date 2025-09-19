@@ -12,12 +12,7 @@ import StatCard from "./StatCard";
 import BasicTable from "./BasicTable";
 import BarChartComponent from "./BarChart";
 import { ComponentConfig } from "@/prompts/component-mapping";
-
-interface CachedComponent extends ComponentConfig {
-  id: string;
-  prompt: string;
-  timestamp: number;
-}
+import { CachedComponent } from "@/types";
 
 const STORAGE_KEY = "generated-components";
 
@@ -44,9 +39,7 @@ export default function ComponentGenerator() {
 
   // Save components to localStorage whenever the array changes
   useEffect(() => {
-    if (generatedComponents.length > 0) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(generatedComponents));
-    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(generatedComponents));
   }, [generatedComponents]);
 
   const handleGenerate = async () => {

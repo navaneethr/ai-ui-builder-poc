@@ -2,7 +2,7 @@ import {
   createComponentMappingPrompt,
   ComponentConfig,
 } from "@/prompts/component-mapping";
-import { CachedComponent } from "@/app/page";
+import { CachedComponent } from "@/types";
 
 export async function generateComponentFromPrompt(
   userPrompt: string,
